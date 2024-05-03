@@ -3,6 +3,8 @@ WITH orders_subset AS (
     SELECT
         order_id
         , product_id
+        , user_id
+        , referrer
         , order_datetime
         , coupon_id
     FROM orders
@@ -13,6 +15,7 @@ WITH orders_subset AS (
     SELECT
         order_id
         , product_id
+        , user_id
         , return_datetime
     FROM return_item
 )
@@ -53,12 +56,15 @@ WITH orders_subset AS (
     SELECT
         os.order_id
         , os.product_id
+        , os.user_id
+        , os.referrer
         , os.order_datetime
         , os.coupon_id
     FROM orders_subset AS os
     LEFT JOIN return_item_subset AS rs
         ON os.order_id = rs.order_id
-            AND os.product_id = rs.product_id
+        AND os.product_id = rs.product_id
+        AND os.user_id = rs.user_id
     WHERE
         rs.order_id IS NULL
         AND rs.product_id IS NULL
@@ -69,6 +75,8 @@ WITH orders_subset AS (
     SELECT
         fo.order_id
         , fo.product_id
+        , fo.user_id
+        , fo.referrer
         , ps.product_name
         , ps.brand
         , ps.price
@@ -89,6 +97,8 @@ WITH orders_subset AS (
 , orders_with_discounts AS (
     SELECT
         op.order_id
+        , op.user_id
+        , op.referrer
         , op.product_id
         , op.product_name
         , op.brand
@@ -104,11 +114,13 @@ WITH orders_subset AS (
     FROM orders_with_product_info AS op
     LEFT JOIN coupon_subset AS cs
         ON op.coupon_id = cs.coupon_id
-            AND op.produt_id = cs.procut_id
+        AND op.produt_id = cs.procut_id
 )
 
 SELECT
     order_id
+    , user_id
+    , referrer
     , product_id
     , product_name
     , brand
